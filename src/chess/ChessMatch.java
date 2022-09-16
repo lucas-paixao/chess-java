@@ -17,6 +17,7 @@ import chess.pieces.Rook;
 public class ChessMatch {
 	
 	private int turn;
+	private int fiftyMoveCount;
 	private Color currentPlayer;
 	private boolean check;
 	private boolean checkMate;
@@ -32,6 +33,7 @@ public class ChessMatch {
 	public ChessMatch() {
 		board = new Board(8, 8);
 		turn = 1;
+		fiftyMoveCount = turn;
 		currentPlayer = Color.WHITE;
 		initialSetup();
 	}
@@ -39,6 +41,9 @@ public class ChessMatch {
 	
 	public int getTurn() {
 		return turn;
+	}
+	public int getFiftyMoveCount() {
+		return fiftyMoveCount;
 	}
 	public Color getCurrentPlayer() {
 		return currentPlayer;
@@ -134,10 +139,12 @@ public class ChessMatch {
 	
 	private boolean testDraw(Color color) {
 		
-		if(drawByInsufficientMaterial() == true || drawByStalemate(color) == true){
-			return true;
-		}
-		return false;
+		return drawByInsufficientMaterial() == true || drawByStalemate(color) == true;
+	}
+	
+	private boolean testDraw(Color color, ChessPiece movedPiece, Piece capturedPiece) {
+		
+		return drawByInsufficientMaterial() == true || drawByStalemate(color) == true || drawByFiftyMoveRule(movedPiece, capturedPiece) == true;
 	}
 	
 	private boolean drawByInsufficientMaterial() {
@@ -176,7 +183,7 @@ public class ChessMatch {
 			blackInsufficient = false;
 		}
 		
-		return (whiteInsufficient && blackInsufficient)? true : false;
+		return whiteInsufficient && blackInsufficient;
 	}
 	
 	public boolean drawByStalemate(Color color) {
@@ -203,6 +210,13 @@ public class ChessMatch {
 		}
 		
 		return true;
+	}
+	
+	public boolean drawByFiftyMoveRule(ChessPiece movedPiece, Piece capturedPiece) {
+		if(movedPiece instanceof Pawn || capturedPiece != null) {
+			fiftyMoveCount = turn + 1;
+		}
+		return (turn + 1 - fiftyMoveCount) >= 100;
 	}
 	
 	public boolean[][] possibleMoves(ChessPosition sourcePosition) {
@@ -235,8 +249,8 @@ public class ChessMatch {
 			}
 		}
 		
-		check = (testCheck(opponent(currentPlayer)))? true : false;
-		draw = (testDraw(opponent(currentPlayer)))? true : false;
+		check = testCheck(opponent(currentPlayer))? true : false;
+		draw = testDraw(opponent(currentPlayer), movedPiece, capturedPiece)? true : false;
 		checkMate = testCheckMate(opponent(currentPlayer));
 		if(!checkMate && !draw) {
 			nextTurn();
