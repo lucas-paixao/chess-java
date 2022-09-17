@@ -51,14 +51,16 @@ public class UI {
 		}
 	}	
 	
-	public static void printMatch(ChessMatch chessMatch, List<ChessPiece> captured) {
+	public static void printMatch(ChessMatch chessMatch, List<ChessPiece> captured, List<String> chessMoveSequence) {
 		printBoard(chessMatch.getPieces());
 		System.out.println();
 		printCapturedPieces(captured);
 		System.out.println();
+		printChessNotation(chessMoveSequence);
+		System.out.println();
 		System.out.println("Turn: " + chessMatch.getTurn());
 		//System.out.println("Draw count: " + chessMatch.getFiftyMoveCount());
-		if(!chessMatch.getCheckMate() && !chessMatch.getDraw()) {
+		if(!chessMatch.getCheckmate() && !chessMatch.getDraw()) {
 			System.out.println("Waiting player: " + chessMatch.getCurrentPlayer());
 			if(chessMatch.getCheck()) {
 				System.out.println("CHECK!");
@@ -137,6 +139,13 @@ public class UI {
 		System.out.print(ANSI_YELLOW);
 		System.out.print("Black: ");
 		System.out.println(Arrays.toString(black.toArray()));
+		System.out.print(ANSI_RESET);
+	}
+	
+	private static void printChessNotation(List<String> chessMove) {
+		System.out.println("Chess Notation");
+		System.out.print(ANSI_WHITE);
+		System.out.println(Arrays.toString(chessMove.toArray()));
 		System.out.print(ANSI_RESET);
 	}
 

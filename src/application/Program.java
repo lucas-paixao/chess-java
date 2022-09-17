@@ -18,11 +18,13 @@ public class Program {
 		
 		ChessMatch chessMatch = new ChessMatch();
 		List<ChessPiece> captured = new ArrayList<>();
+		List<String> chessMoveSequence = null;
 		
-		while(!chessMatch.getCheckMate() && !chessMatch.getDraw()) {
+		while(!chessMatch.getCheckmate() && !chessMatch.getDraw()) {
 			try {
 				UI.clearScreen();
-				UI.printMatch(chessMatch, captured);
+				chessMoveSequence = chessMatch.getNotation().getChessMoveSequence();
+				UI.printMatch(chessMatch, captured, chessMoveSequence);
 				System.out.println();
 				System.out.print("Source: ");
 				ChessPosition source = UI.readChessPosition(sc);
@@ -61,7 +63,7 @@ public class Program {
 			
 		}
 		UI.clearScreen();
-		UI.printMatch(chessMatch, captured);
+		UI.printMatch(chessMatch, captured, chessMoveSequence);
 		
 	}
 
