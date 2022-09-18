@@ -41,14 +41,12 @@ public class ChessNotation {
 			chessMove.append("O-O-O");
 		}
 		else {
-			
 			if(!(movedPiece instanceof Pawn)) {
 				chessMove.append(movedPiece.toString());
 			}
 			if(ambiguous) {
 				chessMove.append(source.getColumn());
 			}
-			
 			if(movedPiece instanceof Pawn && capturedPiece != null) {
 				chessMove.append(source.getColumn());
 				chessMove.append("x");
@@ -56,8 +54,7 @@ public class ChessNotation {
 			else if(capturedPiece != null) {
 				chessMove.append("x");
 			}
-			
-			chessMove.append(target.toString());
+			chessMove.append(target.toString());	
 		}
 		
 		if(checkmate) {

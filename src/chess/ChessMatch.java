@@ -1,7 +1,11 @@
 package chess;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import board.Board;
@@ -32,6 +36,8 @@ public class ChessMatch {
 	private List<Piece> piecesOnTheBoard = new ArrayList<>();
 	private List<Piece> capturedPieces = new ArrayList<>();
 	
+	private List<HashMap<Piece, String>> logPiecesOnTheBoard = new ArrayList<>();
+	
 	public ChessMatch() {
 		board = new Board(8, 8);
 		turn = 1;
@@ -39,6 +45,7 @@ public class ChessMatch {
 		currentPlayer = Color.WHITE;
 		notation = new ChessNotation();
 		initialSetup();
+		storeCurrentPositions();
 	}
 	
 	public int getTurn() {
@@ -108,6 +115,12 @@ public class ChessMatch {
 		throw new IllegalStateException("There is no " + color + " king on the board");
 	}
 	
+	public boolean[][] possibleMoves(ChessPosition sourcePosition) {
+		Position position = sourcePosition.toPosition();
+		validateSourcePosition(position);
+		return board.piece(position).possibleMoves();
+	}
+	
 	private boolean testCheck(Color color) {
 		Position kingPosition = king(color).getChessPosition().toPosition();
 		List<Piece> opponentPieces = piecesOnTheBoard.stream().filter(x -> ((ChessPiece)x).getColor() == opponent(color)).collect(Collectors.toList());
@@ -146,13 +159,14 @@ public class ChessMatch {
 	}
 	
 	private boolean testDraw(Color color) {
-		
-		return drawByInsufficientMaterial() == true || drawByStalemate(color) == true;
+		return drawByInsufficientMaterial() || drawByStalemate(color);
 	}
 	
 	private boolean testDraw(Color color, ChessPiece movedPiece, Piece capturedPiece) {
-		
-		return drawByInsufficientMaterial() == true || drawByStalemate(color) == true || drawByFiftyMoveRule(movedPiece, capturedPiece) == true;
+		return drawByInsufficientMaterial() || 
+			   drawByStalemate(color) || 
+			   drawByFiftyMoveRule(movedPiece, capturedPiece) || 
+			   drawByThreefoldRepetition();
 	}
 	
 	private boolean drawByInsufficientMaterial() {
@@ -227,10 +241,32 @@ public class ChessMatch {
 		return (turn + 1 - fiftyMoveCount) >= 100;
 	}
 	
-	public boolean[][] possibleMoves(ChessPosition sourcePosition) {
-		Position position = sourcePosition.toPosition();
-		validateSourcePosition(position);
-		return board.piece(position).possibleMoves();
+	private boolean drawByThreefoldRepetition() {
+		if(turn < 12) {
+			return false;
+		}
+		int count = 0;
+		for(int i=0; i < logPiecesOnTheBoard.size() - 1; i++) {
+			HashMap<Piece, String> map = logPiecesOnTheBoard.get(i);
+			int lastIndex = logPiecesOnTheBoard.size() - 1;
+			if(logPiecesOnTheBoard.get(lastIndex).equals(map)) {
+				count++;
+			}
+		}
+		if(count >= 3) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	private void storeCurrentPositions() {
+		HashMap<Piece, String> map = new HashMap<>();
+		for(Piece p : piecesOnTheBoard) {
+			map.put(p, ((ChessPiece)p).getChessPosition().toString());
+		}
+		
+		logPiecesOnTheBoard.add(map);
 	}
 	
 	private boolean isTheMovementAmbiguous(ChessPiece movedPiece, Position target) {
@@ -275,6 +311,7 @@ public class ChessMatch {
 			}
 		}
 		
+		storeCurrentPositions();
 		check = testCheck(opponent(currentPlayer))? true : false;
 		checkmate = testCheckMate(opponent(currentPlayer));
 		String chessMove = notation.parseNotation(sourcePosition, targetPosition, movedPiece, capturedPiece, check, checkmate, ambiguous);
@@ -447,7 +484,7 @@ public class ChessMatch {
 	}
 	
 	private void initialSetup() {
-		/*placeNewPiece('a', 1, new Rook(board, Color.WHITE));
+		placeNewPiece('a', 1, new Rook(board, Color.WHITE));
 		placeNewPiece('b', 1, new Knight(board, Color.WHITE));
 		placeNewPiece('c', 1, new Bishop(board, Color.WHITE));
 		placeNewPiece('d', 1, new Queen(board, Color.WHITE));
@@ -469,19 +506,7 @@ public class ChessMatch {
 		for(int i=0; i < 8; i++) {
 			placeNewPiece((char)('a' + i), 2, new Pawn(board, Color.WHITE, this));
 			placeNewPiece((char) ('a' + i), 7, new Pawn(board, Color.BLACK, this));
-		}	*/
-		
-		placeNewPiece('e', 1, new King(board, Color.WHITE, this));
-		//placeNewPiece('g', 4, new Pawn(board, Color.WHITE, this));
-		placeNewPiece('h', 1, new Rook(board, Color.WHITE));
-		placeNewPiece('a', 1, new Rook(board, Color.WHITE));
-		
-		placeNewPiece('e', 8, new King(board, Color.BLACK, this));
-		placeNewPiece('b', 3, new Rook(board, Color.BLACK));
-		placeNewPiece('g', 5, new Rook(board, Color.BLACK));
-		placeNewPiece('h', 6, new Pawn(board, Color.BLACK, this));
+		}
 		
 	}
-
-
 }
